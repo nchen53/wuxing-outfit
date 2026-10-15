@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>五行穿衣</title>
+<style>
+  :root{
+    --ink:#23262f;
+    --ink-soft:#5a5f70;
+    --b1:#f2da9a; --b2:#d9be9a; --b3:#e3ddd0;
+    --glass:rgba(255,255,255,.40);
+    --glass-edge:rgba(255,255,255,.66);
+    --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+    --serif:"Songti SC","Noto Serif SC","STSong","SimSun",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:var(--sans);color:var(--ink);
+    min-height:100vh;background:#f4f5fa;
+    padding:max(18px,env(safe-area-inset-top)) 16px max(32px,env(safe-area-inset-bottom));
+    overflow-x:hidden;
+  }
+  body{padding-top:max(46px,calc(env(safe-area-inset-top) + 34px))}
+  .author{
+    position:absolute;top:max(12px,env(safe-area-inset-top));right:14px;z-index:5;
+    font-size:12px;color:var(--ink-soft);padding:5px 12px;border-radius:999px;
+    background:rgba(255,255,255,.5);border:1px solid var(--glass-edge);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    box-shadow:0 4px 14px rgba(70,80,130,.1);
+  }
+  .blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.85;z-index:-1;transition:background 1s ease}
+  .blob.a{width:380px;height:380px;left:-120px;top:-80px;background:var(--b1)}
+  .blob.b{width:420px;height:420px;right:-140px;top:30%;background:var(--b2)}
+  .blob.c{width:360px;height:360px;left:5%;bottom:-140px;background:var(--b3)}
+
+  .glass{
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(24px) saturate(165%);
+    backdrop-filter:blur(24px) saturate(165%);
+    border:1px solid var(--glass-edge);
+    box-shadow:0 12px 40px rgba(70,80,130,.13), inset 0 1px 0 rgba(255,255,255,.75);
+  }
+  .wrap{max-width:1020px;margin:0 auto;display:grid;gap:16px}
+  @media(min-width:860px){
+    .wrap{grid-template-columns:360px 1fr;align-items:start;gap:20px}
+    .day{grid-column:1 / -1}
+    .stage{position:sticky;top:20px}
+  }
+
+  .day{border-radius:30px;padding:22px 22px 18px;display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;justify-content:space-between}
+  .pillar{font-family:var(--serif);font-size:clamp(40px,11vw,60px);font-weight:700;letter-spacing:.06em;line-height:1}
+  .meta{margin-top:10px;font-size:14px;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+  .env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 5px;border-radius:999px;background:rgba(255,255,255,.55);font-size:14px;color:var(--ink)}
+  .nav{display:flex;gap:8px}
+  .nav button{
+    font:inherit;font-size:14px;color:var(--ink);cursor:pointer;
+    padding:9px 16px;border-radius:999px;border:1px solid var(--glass-edge);
+    background:rgba(255,255,255,.5);transition:background .2s,transform .15s;
+  }
+  .nav button:hover{background:rgba(255,255,255,.8)}
+  .nav button:active{transform:scale(.96)}
+
+  .badge{
+    width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;flex:none;
+    font-family:var(--serif);font-weight:700;font-size:15px;color:#fff;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 8px rgba(0,0,0,.12);
+  }
+  .e-jin{background:linear-gradient(145deg,#e6cf8c,#b99a45)}
+  .e-mu{background:linear-gradient(145deg,#86cf9f,#3f9a68)}
+  .e-shui{background:linear-gradient(145deg,#7f93d8,#47589a)}
+  .e-huo{background:linear-gradient(145deg,#f39a82,#d8452f)}
+  .e-tu{background:linear-gradient(145deg,#d2a96b,#9a6f36)}
+
+  .stage{border-radius:34px;padding:18px 18px 20px;display:flex;flex-direction:column;align-items:center}
+  .fig{width:min(250px,66vw);height:auto;display:block;overflow:visible}
+  .legend{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .legend span{display:inline-flex;align-items:center;gap:7px;padding:6px 12px 6px 8px;border-radius:999px;background:rgba(255,255,255,.55);font-size:13px}
+  .legend span.muted{color:var(--ink-soft);padding-left:12px}
+  .legend i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.18);display:block}
+
+  .col{display:grid;gap:16px}
+  .block{border-radius:30px;padding:20px 18px 6px}
+  .block h2{font-family:var(--serif);font-size:21px;letter-spacing:.08em;display:flex;align-items:baseline;gap:10px;margin:0 4px 6px}
+  .block h2 small{font-family:var(--sans);font-size:13px;letter-spacing:0;color:var(--ink-soft);font-weight:400}
+  .row{padding:14px 14px 16px;border-radius:22px;margin:0 0 12px;background:rgba(255,255,255,.34);border:1px solid rgba(255,255,255,.55)}
+  .rowhead{display:flex;gap:12px;align-items:center}
+  .rt{font-size:16px;font-weight:700}
+  .paren{font-weight:400;color:var(--ink-soft);font-size:14px}
+  .rs{font-size:13px;color:var(--ink-soft);margin-top:2px}
+  .note{font-size:13.5px;line-height:1.6;margin:10px 2px 0;color:#3a3e4c}
+  .chips{display:flex;flex-wrap:wrap;gap:10px 14px;margin-top:12px}
+  .chip{
+    font:inherit;background:none;border:0;cursor:pointer;display:grid;justify-items:center;gap:5px;
+    font-size:12.5px;color:var(--ink);padding:2px;border-radius:14px;
+  }
+  .sw{
+    width:40px;height:40px;border-radius:50%;display:block;
+    border:2px solid rgba(255,255,255,.95);
+    box-shadow:0 4px 12px rgba(40,50,90,.18), inset 0 6px 8px rgba(255,255,255,.35);
+    transition:transform .2s, box-shadow .2s;
+  }
+  .chip:hover .sw{transform:translateY(-2px)}
+  .chip[aria-pressed="true"] .sw{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink),0 6px 14px rgba(40,50,90,.25);transform:scale(1.06)}
+  .chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .nav button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .floral{background:radial-gradient(circle at 30% 30%,#e5534b 0 17%,transparent 19%),radial-gradient(circle at 70% 66%,#f5a9c0 0 19%,transparent 21%),radial-gradient(circle at 72% 24%,#fff 0 9%,transparent 11%),#f9d6dc}
+
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;margin:10px 0 14px;border-radius:999px;background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.6)}
+  .tab{
+    font:inherit;font-size:14px;color:var(--ink-soft);cursor:pointer;background:none;border:0;
+    display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:999px;
+    transition:background .25s,color .25s,box-shadow .25s;white-space:nowrap;
+  }
+  .tab .badge{width:22px;height:22px;font-size:12px}
+  .tab[aria-selected="true"]{background:rgba(255,255,255,.9);color:var(--ink);font-weight:700;box-shadow:0 4px 14px rgba(60,70,120,.16)}
+  .tab:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  @media(max-width:380px){.tab{font-size:13px;gap:4px}.tab .badge{display:none}}
+
+  /* 外套开关 */
+  .toggle{
+    margin-left:auto;align-self:center;font:inherit;font-size:13px;letter-spacing:0;cursor:pointer;color:var(--ink);
+    display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;
+    border:1px solid var(--glass-edge);background:rgba(255,255,255,.6);transition:background .2s,transform .15s;
+  }
+  .toggle:hover{background:rgba(255,255,255,.9)}
+  .toggle:active{transform:scale(.96)}
+  .toggle:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .off{font-size:14px;line-height:1.7;color:var(--ink-soft);padding:6px 6px 20px}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="author">作者：zxf jcc</div>
+<div class="blob a"></div><div class="blob b"></div><div class="blob c"></div>
+
+<div class="wrap">
+  <header class="glass day">
+    <div>
+      <div class="pillar" id="pillar">—</div>
+      <div class="meta">
+        <span id="dateText"></span>
+        <span class="env"><span class="badge" id="envBadge">土</span><span id="envText"></span></span>
+      </div>
+    </div>
+    <div class="nav">
+      <button id="prev" aria-label="前一天">前一天</button>
+      <button id="today">今天</button>
+      <button id="next" aria-label="后一天">后一天</button>
+    </div>
+  </header>
+
+  <section class="glass stage" aria-label="穿搭预览">
+    <svg class="fig" id="fig" viewBox="0 14 240 420" role="img" aria-label="手绘风可爱女生穿搭小人"></svg>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <div class="col" id="col"></div>
+</div>
+
+<script>
+/* ============ 五行逻辑 ============ */
+const STEMS = "甲乙丙丁戊己庚辛壬癸";
+const BRANCHES = "子丑寅卯辰巳午未申酉戌亥";
+const BRANCH_EL = {子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水'};
+const GEN = {木:'火',火:'土',土:'金',金:'水',水:'木'};   // X 生 GEN[X]
+const OVR = {木:'土',土:'水',水:'火',火:'金',金:'木'};   // X 克 OVR[X]
+const genBy = e => Object.keys(GEN).find(k => GEN[k] === e);
+const ovrBy = e => Object.keys(OVR).find(k => OVR[k] === e);
+const CLS = {金:'jin',木:'mu',水:'shui',火:'huo',土:'tu'};
+const COLORS = {
+  金:['白色','金色','银色'], 木:['绿色','青色','蓝色'], 水:['黑色','紫色'],
+  火:['红色','花色','粉色'], 土:['黄色','棕色','灰色']
+};
+const HEX = {
+  白色:'#F6F5F0',金色:'#DDB95C',银色:'#C9CFD8',绿色:'#62B07E',青色:'#52B5B2',蓝色:'#5C8DE8',
+  黑色:'#2C2F3A',紫色:'#8B6CD0',红色:'#E5534B',花色:'floral',粉色:'#F5A9C0',
+  黄色:'#F3C94F',棕色:'#9A6A44',灰色:'#A6A9B2'
+};
+const BLOBS = {
+  金:['#e9dcae','#c9d4e2','#f6f0e1'], 木:['#a9e0c1','#9edbe0','#cdeab6'],
+  水:['#9fabf0','#c6aaf0','#bccbe9'], 火:['#ffb5a2','#ffcadb','#ffdba4'],
+  土:['#f2da9a','#dcc09b','#e6e0d2']
+};
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let offset = 0;
+let outerOn = true;
+let topTier = 0;
+const sel = { top:null, bottom:null, outer:null };
+let info, tops, bottoms, outers;
+
+function dayInfo(off){
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + off);
+  const days = Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(2000,0,1)) / 864e5);
+  const idx = (((54 + days) % 60) + 60) % 60;   // 2000-01-01 为戊午日
+  const stem = STEMS[idx % 10], br = BRANCHES[idx % 12];
+  let lunar = '';
+  try{ lunar = new Intl.DateTimeFormat('zh-CN-u-ca-chinese',{month:'long',day:'numeric'}).format(d); }catch(e){}
+  const wk = '日一二三四五六'[d.getDay()];
+  return { d, stem, br, env:BRANCH_EL[br], lunar,
+    text:`${off===0?'今天 ':''}${d.getMonth()+1}月${d.getDate()}日 周${wk}${lunar?' · 农历'+lunar:''}` };
+}
+
+function topOptions(env){
+  return [
+    { el:GEN[env],   title:'交贵人',   sub:`${env}生${GEN[env]}，大环境生我`, note:'大环境生旺你，办事易成，贵人相助，开心轻松，启动贵人运' },
+    { el:ovrBy(env), title:'招财',     sub:`${ovrBy(env)}克${env}，我克大环境`, note:'克者为财，财源滚滚，适合投资、合作、资金回笼' },
+    { el:env,        title:'人际顺畅', sub:`比和，同为${env}`, note:'人际顺畅：与人合作共分利益，易交朋友' }
+  ];
+}
+function partOptions(T, name){
+  const s = genBy(T), k = OVR[T];
+  return [
+    { el:s, title:`${name}生上衣`, paren:'别人生自己', sub:`${s}生${T}` },
+    { el:k, title:`上衣克${name}`, paren:'我克别人',   sub:`${T}克${k}` },
+    { el:T, title:'比和', sub:`与上衣同为${T}`, note:'可以全身一个颜色' }
+  ];
+}
+
+function chipsHTML(part, opt){
+  return COLORS[opt.el].map(c => {
+    const style = HEX[c] === 'floral' ? '' : `style="background:${HEX[c]}"`;
+    const cls = HEX[c] === 'floral' ? 'sw floral' : 'sw';
+    return `<button class="chip" data-part="${part}" data-el="${opt.el}" data-c="${c}" aria-pressed="false" aria-label="${opt.title}${opt.paren?'（'+opt.paren+'）':''}，${c}"><span class="${cls}" ${style}></span>${c}</button>`;
+  }).join('');
+}
+function rowHTML(part, opt){
+  return `<div class="row">
+    <div class="rowhead">
+      <span class="badge e-${CLS[opt.el]}">${opt.el}</span>
+      <div>
+        <div class="rt">${opt.title}${opt.paren?`<span class="paren">（${opt.paren}）</span>`:''}</div>
+        <div class="rs">${opt.sub}</div>
+      </div>
+    </div>
+    ${opt.note?`<p class="note">${opt.note}</p>`:''}
+    <div class="chips">${chipsHTML(part,opt)}</div>
+  </div>`;
+}
+
+function setDefaults(keepTop){
+  if(!keepTop){ sel.top = { el:tops[topTier].el, c:COLORS[tops[topTier].el][0] }; }
+  const T = sel.top.el;
+  bottoms = partOptions(T,'下装');
+  outers  = partOptions(T,'外套');
+  sel.bottom = { el:bottoms[0].el, c:COLORS[bottoms[0].el][0] };
+  sel.outer  = { el:outers[1].el,  c:COLORS[outers[1].el][0] };
+}
+
+function renderAll(){
+  const col = document.getElementById('col');
+  col.innerHTML = `
+    <section class="glass block"><h2>上衣<small>左右切换，先看大环境</small></h2>
+      <div class="tabs" role="tablist" aria-label="上衣推荐类型">${tops.map((o,i)=>`<button class="tab" role="tab" data-tier="${i}" aria-selected="${i===topTier}"><span class="badge e-${CLS[o.el]}">${o.el}</span>${o.title}</button>`).join('')}</div>
+      ${rowHTML('top',tops[topTier])}</section>
+    <section class="glass block"><h2>下装<small>代表他人，与上衣呼应</small></h2>${bottoms.map(o=>rowHTML('bottom',o)).join('')}</section>
+    <section class="glass block"><h2>外套<small>可选</small>
+      <button class="toggle" id="outerToggle" aria-pressed="${outerOn}">${outerOn?'脱掉外套':'穿上外套'}</button></h2>
+      ${outerOn ? outers.map(o=>rowHTML('outer',o)).join('') : '<p class="off">今天不穿外套。想穿的时候，点右上角的“穿上外套”，推荐会回来。</p>'}</section>`;
+  paintFigure();
+}
+
+function dotStyle(c){ return HEX[c]==='floral' ? 'background:radial-gradient(circle at 30% 30%,#e5534b 0 20%,transparent 22%),#f9d6dc' : `background:${HEX[c]}`; }
+
+function paintFigure(){
+  ['top','bottom','outer'].forEach(p => setTarget(p, sel[p].c));
+  const items = [['外套','outer'],['上衣','top'],['下装','bottom']];
+  document.getElementById('legend').innerHTML = items.map(([n,p]) =>
+    (p==='outer' && !outerOn) ? `<span class="muted">外套 不穿</span>`
+      : `<span><i style="${dotStyle(sel[p].c)}"></i>${n} ${sel[p].c}</span>`).join('');
+  document.querySelectorAll('.chip').forEach(b => {
+    const s = sel[b.dataset.part];
+    b.setAttribute('aria-pressed', s.el === b.dataset.el && s.c === b.dataset.c);
+  });
+}
+
+/* ============ 颜色渐变 ============ */
+const FLORAL_BASE = [249,214,220];
+const hexRGB = h => { h = h.replace('#',''); return [0,2,4].map(i => parseInt(h.substr(i,2),16)); };
+const cur = {}, tgt = {}, from = {};
+let t0 = 0, raf = 0;
+const E = {};   // 图形元素缓存
+const els = { g:{}, ov:{} };
+
+function apply(p){
+  const rgb = `rgb(${cur[p].c.map(Math.round).join(',')})`;
+  els.g[p].forEach(n => n.setAttribute('fill', rgb));
+  els.ov[p].forEach(n => n.setAttribute('opacity', cur[p].f.toFixed(3)));
+}
+function setTarget(part, name){
+  const hx = HEX[name];
+  const nt = hx === 'floral' ? { c:FLORAL_BASE.slice(), f:1 } : { c:hexRGB(hx), f:0 };
+  if(!cur[part]){ cur[part] = { c:nt.c.slice(), f:nt.f }; tgt[part] = nt; apply(part); return; }
+  if(tgt[part].f === nt.f && tgt[part].c.every((v,i) => v === nt.c[i])) return;
+  tgt[part] = nt; startTween();
+}
+function startTween(){
+  for(const p in cur) from[p] = { c:cur[p].c.slice(), f:cur[p].f };
+  t0 = performance.now();
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(step);
+}
+function step(t){
+  const k = Math.min(1, (t - t0) / (reduce ? 1 : 750));
+  const e = k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3) / 2;
+  for(const p in cur){
+    cur[p].c = from[p].c.map((v,i) => v + (tgt[p].c[i] - v) * e);
+    cur[p].f = from[p].f + (tgt[p].f - from[p].f) * e;
+    apply(p);
+  }
+  if(k < 1) raf = requestAnimationFrame(step);
+}
+
+/* ============ 手绘小人 ============ */
+const INK = '#3b3043';
+const P = {
+  skirt:  "M96 226 Q120 233 144 226 L182 305 Q120 324 58 305 Z",
+  torso:  "M96 154 Q120 147 144 154 L146 232 Q120 239 94 232 Z",
+  sleeve: "M82 154 Q94 146 106 155 L104 184 L82 184 Z",
+  arm:    "M87 156 L100 156 L101 209 L86 209 Z",
+  jsleeve:"M79 152 Q93 143 108 153 L107 208 L78 208 Z",
+  jpanel: "M94 150 Q104 146 112 150 L113 248 Q100 253 88 248 L90 160 Z"
+};
+const MIR = 'translate(240 0) scale(-1 1)';
+
+// 可变色衣物：底色 + 花色叠层 + 高光 + 双层铅笔线
+function gm(part, d, tf){
+  return `<g ${tf?`transform="${tf}"`:''}>`+
+    `<path class="g g-${part}" d="${d}" fill="#ccc"/>`+
+    `<path class="ov ov-${part}" d="${d}" fill="url(#floral)" opacity="0"/>`+
+    `<path d="${d}" fill="url(#sheen)"/>`+
+    `<path d="${d}" fill="none" stroke="${INK}" stroke-opacity=".28" stroke-width="1.3" transform="translate(1.4 -1.1)"/>`+
+    `<path d="${d}" fill="none" stroke="${INK}" stroke-width="2.2"/></g>`;
+}
+const skinPath = d => `<path d="${d}" fill="url(#skin)" stroke="${INK}" stroke-width="2.2"/>`;
+
+function tailSVG(){
+  return `<path d="M70 80 Q44 86 38 120 Q34 152 52 170 Q64 158 62 138 Q64 112 80 98Z" fill="url(#hairG)" stroke="${INK}" stroke-width="2.2"/>
+    <path d="M52 112 Q48 134 54 152" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.6"/>
+    <path d="M70 85 L54 75 Q50 85 54 95Z" fill="#ff8fb1" stroke="${INK}" stroke-width="1.8"/>
+    <path d="M70 85 L86 75 Q90 85 86 95Z" fill="#ff8fb1" stroke="${INK}" stroke-width="1.8"/>
+    <circle cx="70" cy="85" r="4" fill="#ff6f9b" stroke="${INK}" stroke-width="1.6"/>`;
+}
+function armSVG(){
+  return skinPath(P.arm) + `<circle cx="93.5" cy="216" r="7.5" fill="url(#skin)" stroke="${INK}" stroke-width="2.2"/>` + gm('top', P.sleeve);
+}
+function leg(x){
+  return `<path d="M${x} 300 L${x+14} 300 L${x+13} 376 L${x+1} 376Z" fill="url(#skin)" stroke="${INK}" stroke-width="2"/>
+    <path d="M${x+.5} 350 L${x+13.5} 350 L${x+13} 380 L${x+1} 380Z" fill="#fff" stroke="${INK}" stroke-width="2"/>
+    <path d="M${x+1} 357 H${x+13}" stroke="#f3a6b8" stroke-width="2.4"/>
+    <ellipse cx="${x+7}" cy="392" rx="15" ry="9" fill="#f3a6b8" stroke="${INK}" stroke-width="2.2"/>
+    <path d="M${x-1} 388 Q${x+7} 383 ${x+15} 388" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="1.6"/>`;
+}
+
+function buildFigure(){
+  const svg = document.getElementById('fig');
+  svg.innerHTML = `
+  <defs>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".6"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".05"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".28"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0e6"/><stop offset="1" stop-color="#f6cdb6"/>
+    </linearGradient>
+    <linearGradient id="hairG" x1="0" y1="0" x2=".25" y2="1">
+      <stop offset="0" stop-color="#94604f"/><stop offset="1" stop-color="#5a3a3a"/>
+    </linearGradient>
+    <pattern id="floral" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="#f9d6dc"/>
+      <circle cx="4" cy="4" r="3" fill="#e5534b"/>
+      <circle cx="12" cy="11" r="2.6" fill="#f5a9c0"/>
+      <circle cx="12" cy="3" r="1.4" fill="#fff"/>
+    </pattern>
+    <filter id="soft" x="-40%" y="-20%" width="180%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#3a4070" flood-opacity=".16"/>
+    </filter>
+    <filter id="blur"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="boil" x="-30%" y="-20%" width="160%" height="150%">
+      <feTurbulence id="boilNoise" type="fractalNoise" baseFrequency="0.028" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  <ellipse id="shadow" cx="120" cy="410" rx="70" ry="8" fill="#2a2e50" opacity=".18" filter="url(#blur)"/>
+  <g filter="url(#soft)"><g filter="url(#boil)" stroke-linecap="round" stroke-linejoin="round">
+   <g id="root">
+    <!-- 腿和鞋 -->
+    ${leg(101)}${leg(125)}
+    <!-- 下装：裙子 -->
+    <g id="skirt">
+      ${gm('bottom', P.skirt)}
+      <path d="M108 238 L98 312 M120 240 L120 316 M132 238 L142 312" fill="none" stroke="${INK}" stroke-opacity=".2" stroke-width="1.4"/>
+    </g>
+    <!-- 脖子 + 上衣 -->
+    <rect x="111" y="136" width="18" height="24" rx="8" fill="url(#skin)" stroke="${INK}" stroke-width="2.2"/>
+    ${gm('top', P.torso)}
+    <path d="M107 153 Q120 166 133 153" fill="none" stroke="${INK}" stroke-width="2"/>
+    <!-- 手臂（含上衣短袖） -->
+    <g id="armL">${armSVG()}</g>
+    <g id="armR"><g transform="${MIR}">${armSVG()}</g></g>
+    <!-- 外套 -->
+    <g id="jacket">
+      ${gm('outer', P.jpanel)}
+      ${gm('outer', P.jpanel, MIR)}
+      <g transform="rotate(8 94 156)">${gm('outer', P.jsleeve)}<path d="M78.5 200 H107.5" stroke="${INK}" stroke-opacity=".25" stroke-width="1.6"/></g>
+      <g transform="rotate(-8 146 156)">${gm('outer', P.jsleeve, MIR)}<path d="M132.5 200 H161.5" stroke="${INK}" stroke-opacity=".25" stroke-width="1.6"/></g>
+      <path d="M112 152 L108 180 M128 152 L132 180 M96 226 H106 M134 226 H144" fill="none" stroke="${INK}" stroke-opacity=".28" stroke-width="1.6"/>
+    </g>
+    <!-- 头 -->
+    <g id="head">
+      <g id="tailL">${tailSVG()}</g>
+      <g id="tailR"><g transform="${MIR}">${tailSVG()}</g></g>
+      <path d="M70 104 Q66 52 120 48 Q174 52 170 104 Q172 134 160 142 L80 142 Q68 134 70 104Z" fill="url(#hairG)" stroke="${INK}" stroke-width="2.2"/>
+      <ellipse cx="120" cy="104" rx="46" ry="42" fill="url(#skin)" stroke="${INK}" stroke-width="2.2"/>
+      <ellipse cx="121.4" cy="103" rx="46" ry="42" fill="none" stroke="${INK}" stroke-opacity=".25" stroke-width="1.2"/>
+      <ellipse cx="86" cy="124" rx="8" ry="4.5" fill="#ff9fb0" fill-opacity=".55"/>
+      <ellipse cx="154" cy="124" rx="8" ry="4.5" fill="#ff9fb0" fill-opacity=".55"/>
+      <g id="eyeO">
+        <ellipse cx="101" cy="110" rx="6.5" ry="8.5" fill="#2d2433"/><ellipse cx="139" cy="110" rx="6.5" ry="8.5" fill="#2d2433"/>
+        <circle cx="103.2" cy="106" r="2.7" fill="#fff"/><circle cx="141.2" cy="106" r="2.7" fill="#fff"/>
+        <circle cx="98.8" cy="114" r="1.3" fill="#fff"/><circle cx="136.8" cy="114" r="1.3" fill="#fff"/>
+      </g>
+      <g id="eyeB" style="display:none">
+        <path d="M94 112 Q101 117 108 112 M132 112 Q139 117 146 112" fill="none" stroke="#2d2433" stroke-width="2.4"/>
+      </g>
+      <g id="eyeH" style="display:none">
+        <path d="M94 114 Q101 104 108 114 M132 114 Q139 104 146 114" fill="none" stroke="#2d2433" stroke-width="2.6"/>
+      </g>
+      <path d="M92 95 Q101 90 109 94 M131 94 Q139 90 148 95" fill="none" stroke="#5a3a3a" stroke-width="2"/>
+      <path id="mouthS" d="M113 126 Q120 133 127 126" fill="none" stroke="${INK}" stroke-width="2.2"/>
+      <path id="mouthO" d="M113 125 Q120 140 127 125 Z" fill="#e8667e" stroke="${INK}" stroke-width="2" style="display:none"/>
+      <!-- 刘海和侧发 -->
+      <path d="M72 100 Q68 54 120 50 Q172 54 168 100 Q164 84 152 80 Q146 94 134 78 Q126 92 118 76 Q108 92 100 78 Q88 82 72 100Z" fill="url(#hairG)" stroke="${INK}" stroke-width="2.2"/>
+      <path d="M72 100 Q66 124 74 150 Q84 134 86 108Z" fill="url(#hairG)" stroke="${INK}" stroke-width="2"/>
+      <path d="M168 100 Q174 124 166 150 Q156 134 154 108Z" fill="url(#hairG)" stroke="${INK}" stroke-width="2"/>
+      <path d="M92 66 Q104 58 116 60 M126 62 Q140 60 150 68" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="2"/>
+      <path d="M140 66 L153 71 M141 73 L152 64" stroke="#ffd45e" stroke-width="4" stroke-linecap="round"/>
+    </g>
+   </g>
+  </g></g>`;
+
+  ['root','head','tailL','tailR','armL','armR','jacket','skirt','shadow','eyeO','eyeB','eyeH','mouthS','mouthO','boilNoise']
+    .forEach(id => E[id] = document.getElementById(id));
+  ['top','bottom','outer'].forEach(p => {
+    els.g[p]  = [...svg.querySelectorAll('.g-' + p)];
+    els.ov[p] = [...svg.querySelectorAll('.ov-' + p)];
+  });
+}
+
+/* ============ 多帧动作（每帧一个姿势，不插值，像手绘动画） ============ */
+const DEF = { y:0, sx:1, sy:1, rot:0, hr:0, tl:0, tr:0, al:8, ar:8, eyes:'open', mouth:'smile', sk:1, jx:0, jy:0, jr:0, jo:1 };
+const sway = [0,1.5,2.5,1.5,0,-1.5,-2.5,-1.5];
+const ACTIONS = {
+  // 待机：呼吸、歪头、双马尾轻晃
+  idle:{ loop:true, frames: sway.map((a,i) => ({ y:[0,-.6,-1.2,-.6,0,0,0,0][i], hr:a*.8, tl:a, tr:-a, al:8+a*.6, ar:8-a*.6 })) },
+
+  // 选颜色：蹲一下，蹦起来，落地
+  hop:{ frames:[
+    {y:2,sy:.93,sx:1.05,al:12,ar:12,sk:1.04},
+    {y:-6,sy:1.04,sx:.97,eyes:'happy',mouth:'open',al:30,ar:30,tl:6,tr:-6},
+    {y:-16,sy:1.05,sx:.96,eyes:'happy',mouth:'open',al:55,ar:55,tl:12,tr:-12,hr:3,sk:1.08},
+    {y:-22,sy:1.05,sx:.96,eyes:'happy',mouth:'open',al:60,ar:60,tl:14,tr:-14,hr:4,sk:1.1},
+    {y:-18,sy:1.03,eyes:'happy',mouth:'open',al:55,ar:55,tl:10,tr:-10,hr:2,sk:1.08},
+    {y:-8,al:35,ar:35,eyes:'happy',tl:-8,tr:8,sk:1.04},
+    {y:2,sy:.92,sx:1.06,eyes:'happy',mouth:'open',al:15,ar:15,tl:-12,tr:12,sk:1.06},
+    {y:0,sy:1.03,sx:.99,eyes:'happy',tl:-6,tr:6},
+    {tl:3,tr:-3},
+    {}
+  ]},
+
+  // 换日期：转一圈裙摆，马尾甩起来
+  swish:{ frames:[0,-3,-6,-8,-6,0,6,8,5,0].map((r,i) => ({
+    rot:r, sk:[1,1.04,1.1,1.14,1.1,1.04,1.1,1.14,1.08,1][i],
+    tl:-r*2, tr:r*2, hr:-r*.6, al:8-r*.8, ar:8+r*.8,
+    eyes:(i>=2&&i<=7)?'happy':'open', mouth:(i>=3&&i<=6)?'open':'smile'
+  }))},
+
+  // 脱外套：耸肩，外套滑落，抖落到地上，摆手“搞定”
+  strip:{ jacket:true, frames:[
+    {},
+    {y:-1,hr:-2},
+    {y:-3,jy:3,jr:-1,hr:-3},
+    {y:-3,jy:9,jx:-3,jr:-3,al:14,ar:14,hr:-3},
+    {jy:22,jx:-10,jr:-9,al:30,ar:30,eyes:'happy'},
+    {jy:46,jx:-22,jr:-18,al:55,ar:55,jo:.95,eyes:'happy'},
+    {jy:80,jx:-34,jr:-30,al:85,ar:85,jo:.8,mouth:'open',eyes:'happy'},
+    {jy:122,jx:-44,jr:-44,al:115,ar:115,jo:.55,y:-4,mouth:'open',eyes:'happy'},
+    {jy:160,jx:-52,jr:-58,al:140,ar:140,jo:.25,y:-10,mouth:'open',eyes:'happy'},
+    {jo:0,al:155,ar:155,y:-14,mouth:'open',eyes:'happy',tl:10,tr:-10},
+    {jo:0,al:150,ar:150,y:-6,mouth:'open',eyes:'happy',tl:-6,tr:6},
+    {jo:0,al:150,ar:120,y:-12,mouth:'open',eyes:'happy',tl:6,tr:-6},
+    {jo:0,al:120,ar:150,y:-6,mouth:'open',eyes:'happy',tl:-4,tr:4},
+    {jo:0,al:140,ar:140,y:-10,eyes:'happy'},
+    {jo:0,al:80,ar:80,y:2,sy:.94,sx:1.04,eyes:'happy'},
+    {jo:0,al:30,ar:30},
+    {jo:0}
+  ]},
+
+  // 穿外套：外套从空中飞来，落到肩上，开心蹦一下
+  dress:{ jacket:true, frames:[
+    {jo:0,al:110,ar:110,y:-2},
+    {jo:.4,jx:-52,jy:-120,jr:34,al:130,ar:130,y:-4,mouth:'open'},
+    {jo:.8,jx:-40,jy:-90,jr:26,al:120,ar:120,mouth:'open'},
+    {jo:1,jx:-28,jy:-60,jr:18,al:100,ar:100},
+    {jo:1,jx:-18,jy:-38,jr:11,al:75,ar:75},
+    {jo:1,jx:-9,jy:-20,jr:5,al:50,ar:50},
+    {jo:1,jx:-3,jy:-6,jr:2,al:25,ar:25},
+    {jo:1,jy:5,sy:.95,sx:1.03,al:12,ar:12},
+    {jo:1,jy:-2,eyes:'happy'},
+    {jo:1,y:-10,eyes:'happy',mouth:'open'},
+    {jo:1,y:-18,eyes:'happy',mouth:'open',tl:8,tr:-8},
+    {jo:1,y:-6,eyes:'happy',tl:-6,tr:6},
+    {jo:1,y:2,sy:.93,sx:1.05},
+    {jo:1}
+  ]}
+};
+
+let act = 'idle', fi = 0, tickN = 0, idleN = 0;
+const SEEDS = [3, 11, 19, 27];
+
+function renderPose(f, ctl){
+  const locked = !ctl && outerOn;     // 穿着外套时手臂藏在袖子里，保持不动
+  const al = locked ? 8 : f.al, ar = locked ? 8 : f.ar;
+  E.root.setAttribute('transform', `translate(0 ${f.y}) translate(120 410) rotate(${f.rot}) scale(${f.sx} ${f.sy}) translate(-120 -410)`);
+  E.head.setAttribute('transform', `rotate(${f.hr} 120 140)`);
+  E.tailL.setAttribute('transform', `rotate(${f.tl} 70 84)`);
+  E.tailR.setAttribute('transform', `rotate(${-f.tr} 170 84)`);
+  E.armL.setAttribute('transform', `rotate(${al} 94 156)`);
+  E.armR.setAttribute('transform', `rotate(${-ar} 146 156)`);
+  E.skirt.setAttribute('transform', `translate(120 226) scale(${f.sk} 1) translate(-120 -226)`);
+  const vis = ctl ? f.jo > 0 : outerOn;
+  E.jacket.style.display = vis ? '' : 'none';
+  E.jacket.setAttribute('transform', ctl ? `translate(${f.jx} ${f.jy}) rotate(${f.jr} 120 200)` : '');
+  E.jacket.setAttribute('opacity', ctl ? f.jo : 1);
+  E.eyeO.style.display = f.eyes === 'open' ? '' : 'none';
+  E.eyeB.style.display = f.eyes === 'blink' ? '' : 'none';
+  E.eyeH.style.display = f.eyes === 'happy' ? '' : 'none';
+  E.mouthS.style.display = f.mouth === 'smile' ? '' : 'none';
+  E.mouthO.style.display = f.mouth === 'open' ? '' : 'none';
+  const lift = Math.min(.35, Math.max(0, -f.y / 90));
+  E.shadow.setAttribute('rx', 70 * (1 - lift));
+  E.shadow.setAttribute('opacity', (.18 * (1 - lift)).toFixed(3));
+}
+
+function tick(){
+  const A = ACTIONS[act];
+  const f = Object.assign({}, DEF, A.frames[fi]);
+  if(act === 'idle'){ idleN++; if(idleN % 34 === 0) f.eyes = 'blink'; }
+  E.boilNoise.setAttribute('seed', SEEDS[tickN++ % SEEDS.length]);
+  renderPose(f, !!A.jacket);
+  fi++;
+  if(fi >= A.frames.length){
+    if(A.loop) fi = 0; else { act = 'idle'; fi = 0; }
+  }
+}
+function play(name){
+  if(reduce){ act = 'idle'; fi = 0; renderPose(Object.assign({}, DEF, ACTIONS.idle.frames[0]), false); return; }
+  act = name; fi = 0;
+}
+
+/* ============ 页面逻辑 ============ */
+function loadDay(){
+  info = dayInfo(offset);
+  document.getElementById('pillar').textContent = `${info.stem}${info.br}日`;
+  document.getElementById('dateText').textContent = info.text;
+  const eb = document.getElementById('envBadge');
+  eb.textContent = info.env; eb.className = 'badge e-' + CLS[info.env];
+  document.getElementById('envText').textContent = `地支${info.br}属${info.env}，大环境为${info.env}`;
+  const [b1,b2,b3] = BLOBS[info.env], r = document.documentElement.style;
+  r.setProperty('--b1',b1); r.setProperty('--b2',b2); r.setProperty('--b3',b3);
+  tops = topOptions(info.env);
+  topTier = 0;
+  setDefaults(false);
+  renderAll();
+}
+
+document.getElementById('col').addEventListener('click', e => {
+  const tg = e.target.closest('#outerToggle');
+  if(tg){
+    outerOn = !outerOn;
+    renderAll();
+    play(outerOn ? 'dress' : 'strip');
+    return;
+  }
+  const t = e.target.closest('.tab');
+  if(t){ topTier = +t.dataset.tier; setDefaults(false); renderAll(); play('hop'); return; }
+  const b = e.target.closest('.chip'); if(!b) return;
+  const part = b.dataset.part;
+  sel[part] = { el:b.dataset.el, c:b.dataset.c };
+  if(part === 'top'){ setDefaults(true); renderAll(); } else { paintFigure(); }
+  play('hop');
+});
+document.getElementById('prev').onclick  = () => { offset--; loadDay(); play('swish'); };
+document.getElementById('next').onclick  = () => { offset++; loadDay(); play('swish'); };
+document.getElementById('today').onclick = () => { offset = 0; loadDay(); play('swish'); };
+
+buildFigure();
+loadDay();
+renderPose(Object.assign({}, DEF), false);
+if(!reduce){
+  play('hop');
+  setInterval(() => { if(!document.hidden) tick(); }, 100);
+}
+</script>
+</body>
+</html>
